@@ -1,0 +1,14 @@
+.data
+NUMERO: DB #30, #15
+CONT: DB #32, #1
+.enddata
+.code
+INICIO: LD NUMERO
+ADD NUMERO
+ADD NUMERO
+ST CONT
+LD CONT
+LD NUMERO
+FIM: HALT
+.endcode
+		

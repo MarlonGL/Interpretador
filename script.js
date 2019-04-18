@@ -8,8 +8,11 @@ var methodReading = false;
 var variables = [];
 var rotules = [];
 var codeLines = [];
+var stopReading = false;
 var halt = false;
 var accumulator;
+var programCounter = 0;
+var posMCodeStart = 0;
 
 input.addEventListener('change', function () {
     //console.log(input.files);
@@ -34,6 +37,7 @@ function CheckCurrentLine() {
     }
     if (currentLine.includes(".code")) {
         methodReading = true;
+        posMCodeStart = readingCounter+1;
         //console.log(methodReading);
     }
 }
@@ -46,14 +50,14 @@ function ReadVariables() {
 
             var __stringSplit = currentLine.split(' ');
             var __name = GetBetween(__stringSplit[0], "", ":");
-            var __pos = GetBetween(__stringSplit[2], "#", ",");
+            var __pos = parseInt(GetBetween(__stringSplit[2], "#", ","), 10);
 
             if (__pos == null) {
                 console.log("ERRO NA LEITURA, CHEQUE AS POSICOES DE MEMORIA");
                 variableReading = false;
-                halt = true;
+                stopReading = true;
             }
-            var __value = __stringSplit[3].slice(1);
+            var __value = parseInt(__stringSplit[3].slice(1), 10);
             variables.push({ name: __name, posM: __pos, value: __value });
         }
         else {
@@ -74,7 +78,7 @@ function ReadCode() {
                 var __name = GetBetween(currentLine, "", ":");
                 var __stringSplit = currentLine.split(' ');
 
-                rotules.push({ name: __name, posM: readingCounter });
+                rotules.push({ name: __name, posM: (readingCounter - posMCodeStart) });
 
                 if (__stringSplit.length > 2) {
                     codeLines.push({ command: __stringSplit[1], variable: __stringSplit[2] });
@@ -92,12 +96,12 @@ function ReadCode() {
         }
         else {
             methodReading = false;
-            halt = true;
+            stopReading = true;
         }
     }
 
 }
-function read() {
+function Read() {
     var __finished = false;
     while (__finished === false) {
         currentLine = docLines[readingCounter];
@@ -108,7 +112,7 @@ function read() {
         if (methodReading === true) {
             ReadCode();
         }
-        if (halt) {
+        if (stopReading) {
             __finished = true;
             console.log("Variables:");
             console.log(variables);
@@ -116,19 +120,23 @@ function read() {
             console.log(rotules);
             console.log("Code Lines:");
             console.log(codeLines);
-            run();
+            Run();
         }
     }
 }
 
-function run() {
+function Run() {
     var __running = true;
-    var __programCounter = 0;
     var __command;
     var __var;
     while (__running) {
-        __command = codeLines[__programCounter].command;
-        __var = codeLines[__programCounter].variable;
+        __command = codeLines[programCounter].command;
+        console.log(__command);
+        if (__command.includes("HALT")) {
+            Halt();
+            __running = false;
+        }
+        __var = codeLines[programCounter].variable;
         switch (__command) {
             case "LD":
                 Load(__var);
@@ -142,14 +150,30 @@ function run() {
             case "ADD":
                 Add(__var);
                 break;
+            case "JZ":
+                JZ(__var);
+                break;
+            case "JNZ":
+                JNZ(__var);
+                break;
+            case "JMP":
+                Jump(__var);
+                break;
+            case "JN":
+                JN(__var);
+                break;                
+            case "JP":
+                JP(__var);
+                break;
             case "HALT":
+                console.log("Case halt");
                 Halt();
                 break;
             default:
             // code block
         }
-        __programCounter++;
-        if (__programCounter == codeLines.length) {
+        if (programCounter == codeLines.length) {
+            console.log("Running = false");
             __running = false;
         }
     }
@@ -171,7 +195,6 @@ function GetBetween(p_strSource, p_strStart, p_strEnd) {
 }
 
 function Load(p_var) {
-    //console.log(com, ' ', vari);
     var __currentVar;
     if (p_var !== null) {
         if (p_var.includes("#")) {
@@ -182,43 +205,203 @@ function Load(p_var) {
             for (var i = 0; i < variables.length; i++) {
                 if (p_var.includes(variables[i].name)) {
                     __currentVar = variables[i];
+                    console.log("Variable found on Load command call");
                     console.log(__currentVar);
+                    accumulator = __currentVar.value;
                     break;
                 }
             }
         }
     }
+    programCounter++;
+    console.log("PC: " + programCounter);
 }
 
 function ST(p_var) {
-    console.log("SET");
     if (p_var !== null) {
         if (p_var.includes("#")) {
             console.log(p_var);
+        } else {
+            //console.log('passou do null');
+            for (var i = 0; i < variables.length; i++) {
+                if (p_var.includes(variables[i].name)) {
+                    variables[i].value = accumulator;
+                    console.log("Variable found on Set command call");
+                    console.log(variables[i]);
+                    break;
+                }
+            }
         }
     }
-
+    programCounter++;
+    console.log("PC: " + programCounter);
 }
 
 function Sub(p_var) {
-    console.log("SUB");
     if (p_var !== null) {
         if (p_var.includes("#")) {
-            console.log(p_var);
+            var __stringSplit = p_var.substr(1, p_var.length);
+            var numSliced = parseInt(__stringSplit, 10);
+            accumulator -= numSliced;
+            console.log("AC:" + accumulator);
+        } else {
+            //console.log('passou do null');
+            for (var i = 0; i < variables.length; i++) {
+                if (p_var.includes(variables[i].name)) {
+                    accumulator -= variables[i].value;
+                    console.log("AC:" + accumulator);
+                    break;
+                }
+            }
         }
     }
+    programCounter++;
+    console.log("PC: " + programCounter);
 
 }
 
 function Add(p_var) {
-    console.log("ADD");
     if (p_var !== null) {
         if (p_var.includes("#")) {
-            console.log(p_var);
+            var __stringSplit = p_var.substr(1, p_var.length);
+            var numSliced = parseInt(__stringSplit, 10);
+            accumulator += numSliced;
+            console.log("AC:" + accumulator);
+        } else {
+            //console.log('passou do null');
+            for (var i = 0; i < variables.length; i++) {
+                if (p_var.includes(variables[i].name)) {
+                    accumulator += variables[i].value;
+                    console.log("AC:" + accumulator);
+                    break;
+                }
+            }
+        }
+    }
+    programCounter++;
+    console.log("PC: " + programCounter);
+}
+
+function JZ(p_var) {
+    if (accumulator == 0) {
+        if (p_var.includes("#")) {
+            var __stringSplit = p_var.substr(1, p_var.length);
+            var numSliced = parseInt(__stringSplit, 10);
+            programCounter = numSliced;
+            console.log("PC on JZ receives: " + programCounter);
+        }
+        else {
+            for (var i = 0; i < rotules.length; i++) {
+                if (p_var.includes(rotules[i].name)) {
+                    programCounter = rotules[i].posM;
+                    console.log("PC on JZ with VAR receives: " + programCounter);
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        console.log("Accumulator > 0 on JZ " + accumulator);
+        programCounter++;
+        console.log("PC: " + programCounter);
+    }
+}
+
+function JNZ(p_var) {
+    if (accumulator > 0) {
+        if (p_var.includes("#")) {
+            var __stringSplit = p_var.substr(1, p_var.length);
+            var numSliced = parseInt(__stringSplit, 10);
+            programCounter = numSliced;
+            console.log("PC on JNZ receives: " + programCounter);
+        }
+        else {
+            for (var i = 0; i < rotules.length; i++) {
+                if (p_var.includes(rotules[i].name)) {
+                    programCounter = rotules[i].posM;
+                    console.log("PC on JNZ with VAR receives: " + programCounter);
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        console.log("Accumulator >= 0 on JNZ " + accumulator);
+        programCounter++;
+        console.log("PC: " + programCounter);
+    }
+}
+
+function JN(p_var) {
+    if (accumulator < 0) {
+        if (p_var.includes("#")) {
+            var __stringSplit = p_var.substr(1, p_var.length);
+            var numSliced = parseInt(__stringSplit, 10);
+            programCounter = numSliced;
+            console.log("PC on JN receives: " + programCounter);
+        }
+        else {
+            for (var i = 0; i < rotules.length; i++) {
+                if (p_var.includes(rotules[i].name)) {
+                    programCounter = rotules[i].posM;
+                    console.log("PC on JN with VAR receives: " + programCounter);
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        console.log("Accumulator >= 0 on JN " + accumulator);
+        programCounter++;
+        console.log("PC: " + programCounter);
+    }
+}
+
+function JP(p_var) {
+    if (accumulator >= 0) {
+        if (p_var.includes("#")) {
+            var __stringSplit = p_var.substr(1, p_var.length);
+            var numSliced = parseInt(__stringSplit, 10);
+            programCounter = numSliced;
+            console.log("PC on JP receives: " + programCounter);
+        }
+        else {
+            for (var i = 0; i < rotules.length; i++) {
+                if (p_var.includes(rotules[i].name)) {
+                    programCounter = rotules[i].posM;
+                    console.log("PC on JP with VAR receives: " + programCounter);
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        console.log("Accumulator < 0 on JP " + accumulator);
+        programCounter++;
+        console.log("PC: " + programCounter);
+    }
+}
+
+
+function Jump(p_var) {
+    if (p_var.includes("#")) {
+        var __stringSplit = p_var.substr(1, p_var.length);
+        var numSliced = parseInt(__stringSplit, 10);
+        programCounter = numSliced;
+        console.log("PC on Jump receives: " + programCounter);
+    }
+    else {
+        for (var i = 0; i < rotules.length; i++) {
+            if (p_var.includes(rotules[i].name)) {
+                programCounter = rotules[i].posM;
+                console.log("PC on Jump with VAR receives: " + programCounter);
+                break;
+            }
         }
     }
 }
 
 function Halt() {
+    console.log("### HALT ###");
     halt = true;
 }
