@@ -1,0 +1,18 @@
+.data
+R: DB #30, #0
+G: DB #31, #255
+B: DB #32, #0
+X: DB #33, #50
+Y: DB #34, #100
+.enddata
+.code
+INICIO: LD X
+LD2 Y
+POS
+LD R
+LD2 G
+LD3 B
+PXL
+HALT
+.endcode
+		

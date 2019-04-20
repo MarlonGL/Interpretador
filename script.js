@@ -11,11 +11,26 @@ var codeLines = [];
 var stopReading = false;
 var halt = false;
 var accumulator;
+var accumulator2;
+var accumulator3;
 var programCounter = 0;
 var posMCodeStart = 0;
+//Canvas
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+var height = 500, width = 500;
+var x = 0, y = 0;
+
+var xLine = 5, yLine = 40;
+var lineSize = 20;
+
+
+
+CLR(false);
 
 input.addEventListener('change', function () {
     //console.log(input.files);
+    reset();
     const reader = new FileReader();
     reader.onload = function () {
         docLines = reader.result.split('\n');
@@ -28,7 +43,6 @@ input.addEventListener('change', function () {
     reader.readAsText(input.files[0]);
 
 })
-
 function CheckCurrentLine() {
 
     if (currentLine.includes(".data")) {
@@ -41,7 +55,6 @@ function CheckCurrentLine() {
         //console.log(methodReading);
     }
 }
-
 function ReadVariables() {
     while (variableReading === true) {
         readingCounter++;
@@ -67,7 +80,6 @@ function ReadVariables() {
 
     }
 }
-
 function ReadCode() {
     while (methodReading === true) {
         readingCounter++;
@@ -124,24 +136,53 @@ function Read() {
         }
     }
 }
-
 function Run() {
     var __running = true;
     var __command;
     var __var;
+    programCounter = 0;
     while (__running) {
         __command = codeLines[programCounter].command;
-        console.log(__command);
+        console.log(__command + ' PC ' + programCounter);
+
         if (__command.includes("HALT")) {
             Halt();
             __running = false;
         }
+        if (__command.includes("POS")) {
+            POS();
+        }
+        if (__command.includes("PXL")) {
+            PXL();
+        }
+        if (__command.includes("CLR")) {
+            CLR(true);
+        }
+        
         __var = codeLines[programCounter].variable;
+        if (__command.includes("RND")) {
+            RND(__var);      
+        }
+        if (__command.includes("PRT")) {
+            print(__var);      
+        }
         switch (__command) {
             case "LD":
                 Load(__var);
                 break;
+            case "LD2":
+                Load2(__var);
+                break;
+            case "LD3":
+                Load3(__var);
+                break;
             case "ST":
+                ST(__var);
+                break;
+            case "ST2":
+                ST(__var);
+                break;
+            case "ST3":
                 ST(__var);
                 break;
             case "SUB":
@@ -165,23 +206,17 @@ function Run() {
             case "JP":
                 JP(__var);
                 break;
-            case "HALT":
-                console.log("Case halt");
-                Halt();
-                break;
             default:
-            // code block
         }
         if (programCounter == codeLines.length) {
             console.log("Running = false");
             __running = false;
+            
         }
     }
 
 }
-function CheckMethod(p_var) {
-
-}
+function CheckMethod(p_var) {}
 function GetBetween(p_strSource, p_strStart, p_strEnd) {
     var __start, __end;
     if (p_strSource.includes(p_strStart) && p_strSource.includes(p_strEnd)) {
@@ -193,7 +228,6 @@ function GetBetween(p_strSource, p_strStart, p_strEnd) {
         return "";
     }
 }
-
 function Load(p_var) {
     var __currentVar;
     if (p_var !== null) {
@@ -216,7 +250,50 @@ function Load(p_var) {
     programCounter++;
     console.log("PC: " + programCounter);
 }
-
+function Load2(p_var) {
+    var __currentVar;
+    if (p_var !== null) {
+        if (p_var.includes("#")) {
+            console.log(p_var);
+        }
+        else {
+            //console.log('passou do null');
+            for (var i = 0; i < variables.length; i++) {
+                if (p_var.includes(variables[i].name)) {
+                    __currentVar = variables[i];
+                    console.log("Variable found on Load command call");
+                    console.log(__currentVar);
+                    accumulator2 = __currentVar.value;
+                    break;
+                }
+            }
+        }
+    }
+    programCounter++;
+    console.log("PC: " + programCounter);
+}
+function Load3(p_var) {
+    var __currentVar;
+    if (p_var !== null) {
+        if (p_var.includes("#")) {
+            console.log(p_var);
+        }
+        else {
+            //console.log('passou do null');
+            for (var i = 0; i < variables.length; i++) {
+                if (p_var.includes(variables[i].name)) {
+                    __currentVar = variables[i];
+                    console.log("Variable found on Load command call");
+                    console.log(__currentVar);
+                    accumulator3 = __currentVar.value;
+                    break;
+                }
+            }
+        }
+    }
+    programCounter++;
+    console.log("PC: " + programCounter);
+}
 function ST(p_var) {
     if (p_var !== null) {
         if (p_var.includes("#")) {
@@ -236,7 +313,44 @@ function ST(p_var) {
     programCounter++;
     console.log("PC: " + programCounter);
 }
-
+function ST2(p_var) {
+    if (p_var !== null) {
+        if (p_var.includes("#")) {
+            console.log(p_var);
+        } else {
+            //console.log('passou do null');
+            for (var i = 0; i < variables.length; i++) {
+                if (p_var.includes(variables[i].name)) {
+                    variables[i].value = accumulator2;
+                    console.log("Variable found on Set command call");
+                    console.log(variables[i]);
+                    break;
+                }
+            }
+        }
+    }
+    programCounter++;
+    console.log("PC: " + programCounter);
+}
+function ST3(p_var) {
+    if (p_var !== null) {
+        if (p_var.includes("#")) {
+            console.log(p_var);
+        } else {
+            //console.log('passou do null');
+            for (var i = 0; i < variables.length; i++) {
+                if (p_var.includes(variables[i].name)) {
+                    variables[i].value = accumulator3;
+                    console.log("Variable found on Set command call");
+                    console.log(variables[i]);
+                    break;
+                }
+            }
+        }
+    }
+    programCounter++;
+    console.log("PC: " + programCounter);
+}
 function Sub(p_var) {
     if (p_var !== null) {
         if (p_var.includes("#")) {
@@ -259,7 +373,6 @@ function Sub(p_var) {
     console.log("PC: " + programCounter);
 
 }
-
 function Add(p_var) {
     if (p_var !== null) {
         if (p_var.includes("#")) {
@@ -281,7 +394,6 @@ function Add(p_var) {
     programCounter++;
     console.log("PC: " + programCounter);
 }
-
 function JZ(p_var) {
     if (accumulator == 0) {
         if (p_var.includes("#")) {
@@ -306,7 +418,6 @@ function JZ(p_var) {
         console.log("PC: " + programCounter);
     }
 }
-
 function JNZ(p_var) {
     if (accumulator > 0) {
         if (p_var.includes("#")) {
@@ -331,7 +442,6 @@ function JNZ(p_var) {
         console.log("PC: " + programCounter);
     }
 }
-
 function JN(p_var) {
     if (accumulator < 0) {
         if (p_var.includes("#")) {
@@ -356,7 +466,6 @@ function JN(p_var) {
         console.log("PC: " + programCounter);
     }
 }
-
 function JP(p_var) {
     if (accumulator >= 0) {
         if (p_var.includes("#")) {
@@ -381,8 +490,6 @@ function JP(p_var) {
         console.log("PC: " + programCounter);
     }
 }
-
-
 function Jump(p_var) {
     if (p_var.includes("#")) {
         var __stringSplit = p_var.substr(1, p_var.length);
@@ -400,8 +507,76 @@ function Jump(p_var) {
         }
     }
 }
-
 function Halt() {
     console.log("### HALT ###");
     halt = true;
+}
+function CLR(codigo){
+    console.log("clear");
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, 500, 500);
+    yLine = 15;
+    x = 0;
+    y = 0;
+    console.clear();
+    if(codigo){
+        programCounter ++;
+    }
+}
+function print(p_var){
+    var texto;
+    for (var i = 0; i < variables.length; i++) {
+        if (p_var.includes(variables[i].name)) {
+            texto = variables[i].value;
+            break;
+        }
+    }
+    ctx.font = "15px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText("-  " + texto , xLine, yLine); 
+    yLine += lineSize;
+    programCounter ++;
+}
+function POS(){
+    x = accumulator;
+    y = accumulator2;
+    programCounter ++;
+}
+function PXL(){
+    ctx.fillStyle = 'rgb('+ accumulator + ',' + accumulator2 + ',' + accumulator3 + ')';
+    console.log(ctx.fillStyle);
+    console.log('rgb'+ accumulator,accumulator2,accumulator3);
+    ctx.fillRect(x, y, 4, 4);
+    programCounter ++;
+}
+function RND(p_var){
+    var rand = Math.floor(Math.random()* (accumulator2 - accumulator + 1)) + accumulator;
+    console.log('rand ' + rand);
+    for (var i = 0; i < variables.length; i++) {
+        if (p_var.includes(variables[i].name)) {
+            variables[i].value = rand;
+            break;
+        }
+    }
+    programCounter++;
+}
+
+function reset(){
+    readerDone = false;
+    docLines = null;
+    readingCounter = 0;
+    currentLine;
+    variableReading = false;
+    methodReading = false;
+    variables = [];
+    rotules = [];
+    codeLines = [];
+    stopReading = false;
+    halt = false;
+    accumulator = 0;;
+    accumulator2 = 0;
+    accumulator3 = 0;
+    programCounter = 0;
+    posMCodeStart = 0;
+    console.clear();
 }

@@ -1,0 +1,12 @@
+.data
+NUMERO: DB #30, #15
+MIN: DB #31, #10
+MAX: DB #32, #100
+.enddata
+.code
+INICIO: LD MIN
+LD2 MAX
+RND NUMERO
+PRT NUMERO
+.endcode
+		
