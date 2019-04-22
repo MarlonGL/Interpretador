@@ -149,7 +149,8 @@ function Read() {
     }
 }
 function Step() {
-    CLR(false);
+    //CLR(false);
+    CLRlog();
     Run();
     printStep("PC: " + programCounter + " | AC: " + accumulator + " | AC2: " + accumulator2 + " | AC3: " + accumulator3);
     for (var i = 0; i < variables.length; i++) {
@@ -157,7 +158,7 @@ function Step() {
     }
 }
 function DoAll() {
-    CLR(false);
+    //CLR(false);
     running = true;
     while (running) {
         Run();
@@ -590,6 +591,13 @@ function CLR(codigo) {
     if (codigo) {
         programCounter++;
     }
+}
+function CLRlog(){
+    ctx1.fillStyle = "#000554";
+    ctx1.fillRect(0, 0, 500, 500);
+    yLine1 = 15;
+    x1 = 0;
+    y1 = 0;
 }
 function print(p_var) {
     var texto;
