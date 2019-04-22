@@ -1,0 +1,27 @@
+.data
+X: DB #30, #100
+Y: DB #31, #100
+R: DB #32, #0
+G: DB #33, #255
+B: DB #34, #0
+TAM: DB #35, #50
+TAMY: DB #36, #25
+.enddata
+.code
+LINHAY: LD X
+LD2 Y
+POS
+LD R
+LD2 G
+LD3 B
+PXL
+LD TAMY
+JZ FIM
+SUB #1
+ST TAMY
+LD Y
+ADD #4
+ST Y
+JMP LINHAY
+FIM: HALT
+.endcode
