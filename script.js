@@ -183,7 +183,7 @@ function Run() {
         if (__command.includes("ADDF")) {
             ADDF(__var);      
         }
-        if (__command.includes("IN")) {
+        if (__command === "IN") {
             IN(__var);      
         }
         switch (__command) {
