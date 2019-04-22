@@ -15,6 +15,9 @@ var accumulator2;
 var accumulator3;
 var programCounter = 0;
 var posMCodeStart = 0;
+var running = false;
+
+
 //Canvas
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
@@ -23,6 +26,15 @@ var x = 0, y = 0;
 
 var xLine = 5, yLine = 40;
 var lineSize = 20;
+
+var canvasLog = document.getElementById("canvasLog");
+var ctx1 = canvasLog.getContext("2d");
+var height1 = 500, width1 = 500;
+var x1 = 0, y1 = 0;
+
+var xLine1 = 5, yLine1 = 40;
+var lineSize1 = 20;
+
 
 
 
@@ -51,7 +63,7 @@ function CheckCurrentLine() {
     }
     if (currentLine.includes(".code")) {
         methodReading = true;
-        posMCodeStart = readingCounter+1;
+        posMCodeStart = readingCounter + 1;
         ////console.log(methodReading);
     }
 }
@@ -136,107 +148,120 @@ function Read() {
         }
     }
 }
+function Step() {
+    CLR(false);
+    Run();
+    printStep("PC: " + programCounter + " | AC: " + accumulator + " | AC2: " + accumulator2 + " | AC3: " + accumulator3);
+    for (var i = 0; i < variables.length; i++) {
+        printStep(variables[i].name + ": " + variables[i].value);
+    }
+}
+function DoAll() {
+    CLR(false);
+    running = true;
+    while (running) {
+        Run();
+    }
+    printStep("PC: " + programCounter + " | AC: " + accumulator + " | AC2: " + accumulator2 + " | AC3: " + accumulator3);
+    for (var i = 0; i < variables.length; i++) {
+        printStep(variables[i].name + ": " + variables[i].value);
+    }
+}
 function Run() {
-    var __running = true;
     var __command;
     var __var;
-    programCounter = 0;
-    while (__running) {
-        __command = codeLines[programCounter].command;
-        //console.log(__command + ' PC ' + programCounter);
+    __command = codeLines[programCounter].command;
+    //console.log(__command + ' PC ' + programCounter);
 
-        if (__command.includes("HALT")) {
-            Halt();
-            __running = false;
-        }
-        if (__command.includes("POS")) {
-            POS();
-        }
-        if (__command.includes("PXL")) {
-            PXL();
-        }
-        if (__command.includes("CLR")) {
-            CLR(true);
-        }
-        
-        __var = codeLines[programCounter].variable;
-        //console.log(escape(__var));
-
-        if (escape(__var).includes("%0D")) {
-            var tempValue = __var.search("%0D");
-            __var = __var.slice(0, tempValue);
-            //console.log("Includes and sliced Name: " + __var);
-           // console.log(escape(__var));
-        }
-        if (__command.includes("RND")) {
-            RND(__var);      
-        }
-        if (__command.includes("PRT")) {
-            print(__var);      
-        }
-        if (__command.includes("COS")) {
-            COS(__var);      
-        }
-        if (__command.includes("SIN")) {
-            SEN(__var);      
-        }
-        if (__command.includes("ADDF")) {
-            ADDF(__var);      
-        }
-        if (__command === "IN") {
-            IN(__var);      
-        }
-        switch (__command) {
-            case "LD":
-                Load(__var);
-                break;
-            case "LD2":
-                Load2(__var);
-                break;
-            case "LD3":
-                Load3(__var);
-                break;
-            case "ST":
-                ST(__var);
-                break;
-            case "ST2":
-                ST(__var);
-                break;
-            case "ST3":
-                ST(__var);
-                break;
-            case "SUB":
-                Sub(__var);
-                break;
-            case "ADD":
-                Add(__var);
-                break;
-            case "JZ":
-                JZ(__var);
-                break;
-            case "JNZ":
-                JNZ(__var);
-                break;
-            case "JMP":
-                Jump(__var);
-                break;
-            case "JN":
-                JN(__var);
-                break;                
-            case "JP":
-                JP(__var);
-                break;
-            default:
-        }
-        if (programCounter == codeLines.length) {
-            //console.log("Running = false");
-            __running = false;
-            
-        }
+    if (__command.includes("HALT")) {
+        Halt();
+        running = false;
+    }
+    if (__command.includes("POS")) {
+        POS();
+    }
+    if (__command.includes("PXL")) {
+        PXL();
+    }
+    if (__command.includes("CLR")) {
+        CLR(true);
     }
 
+    __var = codeLines[programCounter].variable;
+    //console.log(escape(__var));
+
+    if (escape(__var).includes("%0D")) {
+        var tempValue = __var.search("%0D");
+        __var = __var.slice(0, tempValue);
+        //console.log("Includes and sliced Name: " + __var);
+        // console.log(escape(__var));
+    }
+    if (__command.includes("RND")) {
+        RND(__var);
+    }
+    if (__command.includes("PRT")) {
+        print(__var);
+    }
+    if (__command.includes("COS")) {
+        COS(__var);
+    }
+    if (__command.includes("SIN")) {
+        SEN(__var);
+    }
+    if (__command.includes("ADDF")) {
+        ADDF(__var);
+    }
+    if (__command === "IN") {
+        IN(__var);
+    }
+    switch (__command) {
+        case "LD":
+            Load(__var);
+            break;
+        case "LD2":
+            Load2(__var);
+            break;
+        case "LD3":
+            Load3(__var);
+            break;
+        case "ST":
+            ST(__var);
+            break;
+        case "ST2":
+            ST(__var);
+            break;
+        case "ST3":
+            ST(__var);
+            break;
+        case "SUB":
+            Sub(__var);
+            break;
+        case "ADD":
+            Add(__var);
+            break;
+        case "JZ":
+            JZ(__var);
+            break;
+        case "JNZ":
+            JNZ(__var);
+            break;
+        case "JMP":
+            Jump(__var);
+            break;
+        case "JN":
+            JN(__var);
+            break;
+        case "JP":
+            JP(__var);
+            break;
+        default:
+    }
+    if (programCounter == codeLines.length) {
+        //console.log("Running = false");
+        running = false;
+    }
 }
-function CheckMethod(p_var) {}
+function CheckMethod(p_var) { }
 function GetBetween(p_strSource, p_strStart, p_strEnd) {
     var __start, __end;
     if (p_strSource.includes(p_strStart) && p_strSource.includes(p_strEnd)) {
@@ -258,8 +283,8 @@ function Load(p_var) {
             ////console.log('passou do null');
             for (var i = 0; i < variables.length; i++) {
                 //if (p_var.includes(variables[i].name)) {
-                    
-                    //console.log()
+
+                //console.log()
                 if (p_var === variables[i].name) {
                     __currentVar = variables[i];
                     //console.log("Variable found on Load command call");
@@ -328,7 +353,7 @@ function ST(p_var) {
             ////console.log('passou do null');
             for (var i = 0; i < variables.length; i++) {
                 //if (p_var.includes(variables[i].name)) {
-                    if (p_var === variables[i].name) {
+                if (p_var === variables[i].name) {
                     variables[i].value = accumulator;
                     //console.log("Variable found on Set command call");
                     //console.log(variables[i]);
@@ -348,7 +373,7 @@ function ST2(p_var) {
             ////console.log('passou do null');
             for (var i = 0; i < variables.length; i++) {
                 //if (p_var.includes(variables[i].name)) {
-                    if (p_var === variables[i].name) {
+                if (p_var === variables[i].name) {
                     variables[i].value = accumulator2;
                     //console.log("Variable found on Set command call");
                     //console.log(variables[i]);
@@ -368,7 +393,7 @@ function ST3(p_var) {
             ////console.log('passou do null');
             for (var i = 0; i < variables.length; i++) {
                 //if (p_var.includes(variables[i].name)) {
-                    if (p_var === variables[i].name) {
+                if (p_var === variables[i].name) {
                     variables[i].value = accumulator3;
                     //console.log("Variable found on Set command call");
                     //console.log(variables[i]);
@@ -391,7 +416,7 @@ function Sub(p_var) {
             ////console.log('passou do null');
             for (var i = 0; i < variables.length; i++) {
                 //if (p_var.includes(variables[i].name)) {
-                    if (p_var === variables[i].name) {
+                if (p_var === variables[i].name) {
                     accumulator -= variables[i].value;
                     //console.log("AC:" + accumulator);
                     break;
@@ -414,7 +439,7 @@ function Add(p_var) {
             ////console.log('passou do null');
             for (var i = 0; i < variables.length; i++) {
                 //if (p_var.includes(variables[i].name)) {
-                    if (p_var === variables[i].name) {
+                if (p_var === variables[i].name) {
                     accumulator += variables[i].value;
                     //console.log("AC:" + accumulator);
                     break;
@@ -436,7 +461,7 @@ function JZ(p_var) {
         else {
             for (var i = 0; i < rotules.length; i++) {
                 //if (p_var.includes(rotules[i].name)) {
-                    if (p_var === rotules[i].name) {
+                if (p_var === rotules[i].name) {
                     programCounter = rotules[i].posM;
                     //console.log("PC on JZ with VAR receives: " + programCounter);
                     break;
@@ -461,7 +486,7 @@ function JNZ(p_var) {
         else {
             for (var i = 0; i < rotules.length; i++) {
                 //if (p_var.includes(rotules[i].name)) {
-                    if (p_var === rotules[i].name) {
+                if (p_var === rotules[i].name) {
                     programCounter = rotules[i].posM;
                     //console.log("PC on JNZ with VAR receives: " + programCounter);
                     break;
@@ -486,7 +511,7 @@ function JN(p_var) {
         else {
             for (var i = 0; i < rotules.length; i++) {
                 //if (p_var.includes(rotules[i].name)) {
-                    if (p_var === rotules[i].name) {
+                if (p_var === rotules[i].name) {
                     programCounter = rotules[i].posM;
                     //console.log("PC on JN with VAR receives: " + programCounter);
                     break;
@@ -511,7 +536,7 @@ function JP(p_var) {
         else {
             for (var i = 0; i < rotules.length; i++) {
                 //if (p_var.includes(rotules[i].name)) {
-                    if (p_var === rotules[i].name) {
+                if (p_var === rotules[i].name) {
                     programCounter = rotules[i].posM;
                     //console.log("PC on JP with VAR receives: " + programCounter);
                     break;
@@ -534,8 +559,8 @@ function Jump(p_var) {
     }
     else {
         for (var i = 0; i < rotules.length; i++) {
-           // if (p_var.includes(rotules[i].name)) {
-                if (p_var === rotules[i].name) {
+            // if (p_var.includes(rotules[i].name)) {
+            if (p_var === rotules[i].name) {
                 programCounter = rotules[i].posM;
                 //console.log("PC on Jump with VAR receives: " + programCounter);
                 break;
@@ -547,7 +572,7 @@ function Halt() {
     console.log("### HALT ###");
     halt = true;
 }
-function CLR(codigo){
+function CLR(codigo) {
     //console.log("clear");
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, 500, 500);
@@ -555,73 +580,87 @@ function CLR(codigo){
     x = 0;
     y = 0;
     console.clear();
-    if(codigo){
-        programCounter ++;
+
+    ctx1.fillStyle = "#000554";
+    ctx1.fillRect(0, 0, 500, 500);
+    yLine1 = 15;
+    x1 = 0;
+    y1 = 0;
+    console.clear();
+    if (codigo) {
+        programCounter++;
     }
 }
-function print(p_var){
+function print(p_var) {
     var texto;
     for (var i = 0; i < variables.length; i++) {
         //if (p_var.includes(variables[i].name)) {
-            if (p_var === variables[i].name) {
+        if (p_var === variables[i].name) {
             texto = variables[i].value;
             break;
         }
     }
     ctx.font = "15px Arial";
     ctx.fillStyle = "white";
-    ctx.fillText("-  " + texto , xLine, yLine); 
+    ctx.fillText("-  " + texto, xLine, yLine);
     yLine += lineSize;
-    programCounter ++;
+    programCounter++;
 }
-function POS(){
+
+function printStep(p_var) {
+    ctx1.font = "15px Arial";
+    ctx1.fillStyle = "white";
+    ctx1.fillText("-  " + p_var, xLine1, yLine1);
+    yLine1 += lineSize1;
+}
+function POS() {
     x = accumulator;
     y = accumulator2;
-    programCounter ++;
+    programCounter++;
 }
-function PXL(){
-    ctx.fillStyle = 'rgb('+ accumulator + ',' + accumulator2 + ',' + accumulator3 + ')';
+function PXL() {
+    ctx.fillStyle = 'rgb(' + accumulator + ',' + accumulator2 + ',' + accumulator3 + ')';
     //console.log(ctx.fillStyle);
     //console.log('rgb '+ accumulator,accumulator2,accumulator3);
     ctx.fillRect(x, y, 4, 4);
-    programCounter ++;
+    programCounter++;
 }
-function RND(p_var){
-    var rand = Math.floor(Math.random()* (accumulator2 - accumulator + 1)) + accumulator;
+function RND(p_var) {
+    var rand = Math.floor(Math.random() * (accumulator2 - accumulator + 1)) + accumulator;
     //console.log('rand ' + rand);
     for (var i = 0; i < variables.length; i++) {
         //if (p_var.includes(variables[i].name)) {
-            if (p_var === variables[i].name) {
+        if (p_var === variables[i].name) {
             variables[i].value = rand;
             break;
         }
     }
     programCounter++;
 }
-function COS(p_var){
+function COS(p_var) {
     for (var i = 0; i < variables.length; i++) {
         //if (p_var.includes(variables[i].name)) {
-            if (p_var === variables[i].name) {
+        if (p_var === variables[i].name) {
             accumulator = Math.cos(variables[i].value) * accumulator2;
             break;
         }
     }
-    programCounter ++;
+    programCounter++;
 }
-function SEN(p_var){
+function SEN(p_var) {
     for (var i = 0; i < variables.length; i++) {
         //if (p_var.includes(variables[i].name)) {
-            if (p_var === variables[i].name) {
+        if (p_var === variables[i].name) {
             accumulator = Math.sin(variables[i].value) * accumulator2;
             break;
         }
     }
-    programCounter ++;
+    programCounter++;
 }
-function ADDF(p_var){
+function ADDF(p_var) {
     for (var i = 0; i < variables.length; i++) {
         //if (p_var.includes(variables[i].name)) {
-            if (p_var === variables[i].name) {
+        if (p_var === variables[i].name) {
             var f = variables[i].value.toFixed(2);
             accumulator += f;
             break;
@@ -630,20 +669,20 @@ function ADDF(p_var){
     programCounter++;
 }
 
-function IN(p_var){
+function IN(p_var) {
     var inp;
     inp = prompt('entre o valor da variavel ' + p_var);
 
     for (var i = 0; i < variables.length; i++) {
         //if (p_var.includes(variables[i].name)) {
-            if (p_var === variables[i].name) {
+        if (p_var === variables[i].name) {
             variables[i].value = inp;
             break;
         }
     }
     programCounter++;
 }
-function reset(){
+function reset() {
     readerDone = false;
     docLines = null;
     readingCounter = 0;
