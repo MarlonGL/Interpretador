@@ -127,6 +127,8 @@ function ReadCode() {
 }
 function Read() {
     var __finished = false;
+    currentLine = null;
+    readingCounter = 0;
     while (__finished === false) {
         currentLine = docLines[readingCounter];
         CheckCurrentLine();
@@ -590,6 +592,8 @@ function CLR(codigo) {
     console.clear();
     if (codigo) {
         programCounter++;
+    }else{
+        reset();
     }
 }
 function CLRlog(){
@@ -692,9 +696,9 @@ function IN(p_var) {
 }
 function reset() {
     readerDone = false;
-    docLines = null;
+    //docLines = [];
     readingCounter = 0;
-    currentLine;
+    currentLine = 0;
     variableReading = false;
     methodReading = false;
     variables = [];
